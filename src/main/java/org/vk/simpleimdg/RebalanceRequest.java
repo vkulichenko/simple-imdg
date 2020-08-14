@@ -17,32 +17,5 @@
 
 package org.vk.simpleimdg;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-public class Storage {
-    private final Map<Integer, Map<String, String>> partitions;
-
-    public Storage(Map<UUID, Integer> topology, UUID localId) {
-        partitions = new HashMap<>();
-
-        Mapper mapper = new Mapper();
-
-        for (int i = 0; i < 10; i++) {
-            // TODO
-        }
-    }
-
-    public void put(String key, String value) {
-        partition(key).put(key, value);
-    }
-
-    public String get(String key) {
-        return partition(key).get(key);
-    }
-
-    private Map<String, String> partition(String key) {
-        return partitions.get(key.hashCode() % 10);
-    }
+public class RebalanceRequest {
 }

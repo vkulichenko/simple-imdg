@@ -17,6 +17,7 @@
 
 package org.vk.simpleimdg;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -26,11 +27,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Server {
-    private final Storage storage = new Storage();
-
     private final Discovery discovery = new Discovery();
 
-    private void start() throws Exception {
+    private Storage storage;
+
+    public void start() throws Exception {
         int port = 4000;
 
         ServerSocket serverSocket;
@@ -48,6 +49,8 @@ public class Server {
 
         discovery.join(port);
 
+        storage = new Storage(discovery.topology(), discovery.localId());
+
         while (true) {
             Socket socket = serverSocket.accept();
 
@@ -62,6 +65,7 @@ public class Server {
                         out.writeObject(request.handle(storage));
                     }
                 }
+                catch (EOFException ignored) {}
                 catch (Exception e) {
                     e.printStackTrace();
                 }

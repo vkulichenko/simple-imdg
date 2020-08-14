@@ -32,13 +32,13 @@ public class Client {
     }
 
     public void put(String key, String value) throws Exception {
-        InetSocketAddress address = mapper.map(key, discovery.topology());
+        InetSocketAddress address = mapper.map(key.hashCode() % 10, discovery.topology());
 
         execute(new PutRequest(key, value), address);
     }
 
     public String get(String key) throws Exception {
-        InetSocketAddress address = mapper.map(key, discovery.topology());
+        InetSocketAddress address = mapper.map(key.hashCode() % 10, discovery.topology());
 
         return execute(new GetRequest(key), address);
     }
@@ -51,5 +51,15 @@ public class Client {
 
             return (String)new ObjectInputStream(socket.getInputStream()).readObject();
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Client client = new Client();
+
+        client.start();
+
+        client.put("key1", "value1");
+
+        System.out.println(client.get("key1"));
     }
 }

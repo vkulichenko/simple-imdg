@@ -29,6 +29,9 @@ import io.etcd.jetcd.options.WatchOption;
 import io.etcd.jetcd.watch.WatchEvent;
 
 public class Discovery {
+    private static final String PREFIX = "nodes/";
+    private static final ByteSequence PREFIX_BS = bs(PREFIX);
+
     private final UUID id = UUID.randomUUID();
 
     private final Map<UUID, Integer> topology = new LinkedHashMap<>();
@@ -37,35 +40,40 @@ public class Discovery {
         Client client = Client.builder().endpoints("http://127.0.0.1:2379").build();
 
         synchronized (topology) {
-            for (KeyValue kv : client.getKVClient().get(bs("nodes/"), GetOption.newBuilder().withPrefix(bs("nodes/")).build()).get().getKvs()) {
-                UUID id = UUID.fromString(kv.getKey().toString(StandardCharsets.UTF_8).substring("nodes/".length()));
-                int port = Integer.parseInt(kv.getValue().toString(StandardCharsets.UTF_8));
-
-                topology.put(id, port);
+            for (KeyValue kv : client.getKVClient().get(PREFIX_BS, GetOption.newBuilder().withPrefix(PREFIX_BS).build()).get().getKvs()) {
+                add(kv);
             }
         }
 
-        client.getWatchClient().watch(bs("nodes/"), WatchOption.newBuilder().withPrefix(bs("nodes/")).build(), res -> {
+        client.getWatchClient().watch(PREFIX_BS, WatchOption.newBuilder().withPrefix(PREFIX_BS).build(), res -> {
             synchronized (topology) {
                 for (WatchEvent event : res.getEvents()) {
                     if (event.getEventType() == WatchEvent.EventType.PUT) {
-                        UUID id = UUID.fromString(event.getKeyValue().getKey().toString(StandardCharsets.UTF_8).substring("nodes/".length()));
-                        int port = Integer.parseInt(event.getKeyValue().getValue().toString(StandardCharsets.UTF_8));
-
-                        topology.put(id, port);
+                        add(event.getKeyValue());
                     }
                 }
 
-                System.out.println("Topology:");
-
-                for (Map.Entry<UUID, Integer> entry : topology.entrySet()) {
-                    System.out.println("   " + entry.getKey() + " -> 127.0.0.1:" + entry.getValue());
-                }
+                print();
             }
         });
 
         if (localPort != null)
-            client.getKVClient().put(bs("nodes/" + id), bs(String.valueOf(localPort))).get();
+            client.getKVClient().put(bs(PREFIX_BS.concat(bs(id))), bs(localPort)).get();
+    }
+
+    private void add(KeyValue kv) {
+        UUID id = UUID.fromString(kv.getKey().toString(StandardCharsets.UTF_8).substring(PREFIX.length()));
+        int port = Integer.parseInt(kv.getValue().toString(StandardCharsets.UTF_8));
+
+        topology.put(id, port);
+    }
+
+    private void print() {
+        System.out.println("Topology:");
+
+        for (Map.Entry<UUID, Integer> entry : topology.entrySet()) {
+            System.out.println("   " + entry.getKey() + " -> 127.0.0.1:" + entry.getValue());
+        }
     }
 
     public Map<UUID, Integer> topology() {
@@ -74,7 +82,11 @@ public class Discovery {
         }
     }
 
-    private static ByteSequence bs(String str) {
-        return ByteSequence.from(str, StandardCharsets.UTF_8);
+    public UUID localId() {
+        return id;
+    }
+
+    private static ByteSequence bs(Object o) {
+        return ByteSequence.from(o.toString(), StandardCharsets.UTF_8);
     }
 }

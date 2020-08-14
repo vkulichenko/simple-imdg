@@ -18,19 +18,18 @@
 package org.vk.simpleimdg;
 
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 
 public class Mapper {
-    public InetSocketAddress map(String key, Map<UUID, Integer> topology) {
+    public InetSocketAddress map(int partition, Map<UUID, Integer> topology) {
         long maxHash = Long.MIN_VALUE;
         int port = -1;
 
         for (Map.Entry<UUID, Integer> entry : topology.entrySet()) {
-            long hash = Math.abs(murmur3(key, entry.getKey()));
+            long hash = Math.abs(murmur3(partition, entry.getKey()));
 
             if (hash > maxHash) {
                 maxHash = hash;
@@ -41,10 +40,10 @@ public class Mapper {
         return new InetSocketAddress("127.0.0.1", port);
     }
 
-    private long murmur3(String key, UUID nodeId) {
+    private long murmur3(int partition, UUID nodeId) {
         Hasher hasher = Hashing.murmur3_128().newHasher();
 
-        hasher.putString(key, StandardCharsets.UTF_8);
+        hasher.putInt(partition);
         hasher.putLong(nodeId.getMostSignificantBits());
         hasher.putLong(nodeId.getLeastSignificantBits());
 
