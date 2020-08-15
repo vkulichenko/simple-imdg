@@ -17,60 +17,23 @@
 
 package org.vk.simpleimdg;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.util.UUID;
 
 public class Server {
-    private final Discovery discovery = new Discovery();
+    private final UUID id = UUID.randomUUID();
 
-    private Storage storage;
+    private final Communication communication = new Communication();
+
+    private final Storage storage = new Storage(id, communication);
+
+    private final Discovery discovery = new Discovery(storage::remap);
 
     public void start() throws Exception {
-        int port = 4000;
+        int port = communication.init();
 
-        ServerSocket serverSocket;
+        discovery.join(id, port);
 
-        while (true) {
-            try {
-                serverSocket = new ServerSocket(port);
-
-                break;
-            }
-            catch (IOException e) {
-                port++;
-            }
-        }
-
-        discovery.join(port);
-
-        storage = new Storage(discovery.topology(), discovery.localId());
-
-        while (true) {
-            Socket socket = serverSocket.accept();
-
-            new Thread(() -> {
-                try {
-                    ObjectInput in = new ObjectInputStream(socket.getInputStream());
-                    ObjectOutput out = new ObjectOutputStream(socket.getOutputStream());
-
-                    while (true) {
-                        Command request = (Command)in.readObject();
-
-                        out.writeObject(request.handle(storage));
-                    }
-                }
-                catch (EOFException ignored) {}
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).start();
-        }
+        communication.listen(storage);
     }
 
     public static void main(String[] args) throws Exception {

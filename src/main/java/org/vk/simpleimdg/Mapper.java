@@ -17,27 +17,26 @@
 
 package org.vk.simpleimdg;
 
-import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.UUID;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 
 public class Mapper {
-    public InetSocketAddress map(int partition, Map<UUID, Integer> topology) {
+    public UUID map(int partition, Map<UUID, Integer> topology) {
         long maxHash = Long.MIN_VALUE;
-        int port = -1;
+        UUID mappedId = null;
 
-        for (Map.Entry<UUID, Integer> entry : topology.entrySet()) {
-            long hash = Math.abs(murmur3(partition, entry.getKey()));
+        for (UUID id : topology.keySet()) {
+            long hash = Math.abs(murmur3(partition, id));
 
             if (hash > maxHash) {
                 maxHash = hash;
-                port = entry.getValue();
+                mappedId = id;
             }
         }
 
-        return new InetSocketAddress("127.0.0.1", port);
+        return mappedId;
     }
 
     private long murmur3(int partition, UUID nodeId) {

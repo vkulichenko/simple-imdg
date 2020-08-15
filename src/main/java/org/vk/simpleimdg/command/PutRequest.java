@@ -15,7 +15,24 @@
  * limitations under the License.
  */
 
-package org.vk.simpleimdg;
+package org.vk.simpleimdg.command;
 
-public class RebalanceRequest {
+import org.vk.simpleimdg.Storage;
+
+public class PutRequest implements Command {
+    private final String key;
+
+    private final String value;
+
+    public PutRequest(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    @Override
+    public String handle(Storage storage) {
+        storage.put(key, value);
+
+        return "OK";
+    }
 }

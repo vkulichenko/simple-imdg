@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.KeyValue;
@@ -32,17 +33,23 @@ public class Discovery {
     private static final String PREFIX = "nodes/";
     private static final ByteSequence PREFIX_BS = bs(PREFIX);
 
-    private final UUID id = UUID.randomUUID();
-
     private final Map<UUID, Integer> topology = new LinkedHashMap<>();
 
-    public void join(Integer localPort) throws Exception {
+    private final Consumer<Map<UUID, Integer>> listener;
+
+    public Discovery(Consumer<Map<UUID, Integer>> listener) {
+        this.listener = listener;
+    }
+
+    public void join(UUID localId, Integer localPort) throws Exception {
         Client client = Client.builder().endpoints("http://127.0.0.1:2379").build();
 
         synchronized (topology) {
             for (KeyValue kv : client.getKVClient().get(PREFIX_BS, GetOption.newBuilder().withPrefix(PREFIX_BS).build()).get().getKvs()) {
                 add(kv);
             }
+
+            listener.accept(topology);
         }
 
         client.getWatchClient().watch(PREFIX_BS, WatchOption.newBuilder().withPrefix(PREFIX_BS).build(), res -> {
@@ -54,11 +61,13 @@ public class Discovery {
                 }
 
                 print();
+
+                listener.accept(topology);
             }
         });
 
-        if (localPort != null)
-            client.getKVClient().put(bs(PREFIX_BS.concat(bs(id))), bs(localPort)).get();
+        if (localId != null && localPort != null)
+            client.getKVClient().put(bs(PREFIX_BS.concat(bs(localId))), bs(localPort)).get();
     }
 
     private void add(KeyValue kv) {
@@ -80,10 +89,6 @@ public class Discovery {
         synchronized (topology) {
             return new LinkedHashMap<>(topology);
         }
-    }
-
-    public UUID localId() {
-        return id;
     }
 
     private static ByteSequence bs(Object o) {

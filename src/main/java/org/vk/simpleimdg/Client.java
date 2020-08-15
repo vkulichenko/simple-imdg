@@ -17,40 +17,37 @@
 
 package org.vk.simpleimdg;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.util.Map;
+import java.util.UUID;
+import org.vk.simpleimdg.command.Command;
+import org.vk.simpleimdg.command.GetRequest;
+import org.vk.simpleimdg.command.PutRequest;
 
 public class Client {
-    private final Discovery discovery = new Discovery();
+    private final Communication communication = new Communication();
+
+    private final Discovery discovery = new Discovery(topology -> {});
 
     private final Mapper mapper = new Mapper();
 
     public void start() throws Exception {
-        discovery.join(null);
+        discovery.join(null, null);
     }
 
-    public void put(String key, String value) throws Exception {
-        InetSocketAddress address = mapper.map(key.hashCode() % 10, discovery.topology());
-
-        execute(new PutRequest(key, value), address);
+    public void put(String key, String value) {
+        execute(key, new PutRequest(key, value));
     }
 
-    public String get(String key) throws Exception {
-        InetSocketAddress address = mapper.map(key.hashCode() % 10, discovery.topology());
-
-        return execute(new GetRequest(key), address);
+    public String get(String key) {
+        return execute(key, new GetRequest(key));
     }
 
-    private String execute(Command command, InetSocketAddress address) throws Exception {
-        try (Socket socket = new Socket()) {
-            socket.connect(address);
+    private String execute(String key, Command command) {
+        Map<UUID, Integer> topology = discovery.topology();
 
-            new ObjectOutputStream(socket.getOutputStream()).writeObject(command);
+        UUID id = mapper.map(key.hashCode() % 10, topology);
 
-            return (String)new ObjectInputStream(socket.getInputStream()).readObject();
-        }
+        return communication.execute(command, topology.get(id));
     }
 
     public static void main(String[] args) throws Exception {

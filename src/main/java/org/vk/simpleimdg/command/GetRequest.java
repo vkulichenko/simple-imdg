@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-package org.vk.simpleimdg;
+package org.vk.simpleimdg.command;
+
+import org.vk.simpleimdg.Storage;
 
 public class GetRequest implements Command {
     private final String key;

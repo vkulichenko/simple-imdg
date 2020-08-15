@@ -20,18 +20,21 @@ package org.vk.simpleimdg;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import org.vk.simpleimdg.command.RebalanceRequest;
 
 public class Storage {
-    private final Map<Integer, Map<String, String>> partitions;
+    private final Map<Integer, Map<String, String>> partitions = new HashMap<>();
 
-    public Storage(Map<UUID, Integer> topology, UUID localId) {
-        partitions = new HashMap<>();
+    private final Mapper mapper = new Mapper();
 
-        Mapper mapper = new Mapper();
+    private final UUID localId;
 
-        for (int i = 0; i < 10; i++) {
-            // TODO
-        }
+    private final Communication communication;
+
+    public Storage(UUID localId, Communication communication) {
+        this.localId = localId;
+        this.communication = communication;
     }
 
     public void put(String key, String value) {
@@ -42,7 +45,27 @@ public class Storage {
         return partition(key).get(key);
     }
 
+    public void onPartitionReceived(int partition, Map<String, String> data) {
+        partitions.put(partition, data);
+    }
+
     private Map<String, String> partition(String key) {
         return partitions.get(key.hashCode() % 10);
+    }
+
+    public void remap(Map<UUID, Integer> topology) {
+        for (int i = 0; i < 10; i++) {
+            UUID id = mapper.map(i, topology);
+
+            if (id.equals(localId)) {
+                if (!partitions.containsKey(i))
+                    partitions.put(i, new ConcurrentHashMap<>());
+            }
+            else {
+                Map<String, String> partition = partitions.remove(i);
+
+                communication.execute(new RebalanceRequest(i, partition), topology.get(id));
+            }
+        }
     }
 }
