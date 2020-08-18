@@ -25,7 +25,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import org.vk.simpleimdg.command.Command;
+import org.vk.simpleimdg.request.Request;
 
 public class Communication {
     private ServerSocket serverSocket;
@@ -57,7 +57,7 @@ public class Communication {
                     ObjectOutput out = new ObjectOutputStream(socket.getOutputStream());
 
                     while (true) {
-                        Command request = (Command)in.readObject();
+                        Request request = (Request)in.readObject();
 
                         out.writeObject(request.handle(storage));
                     }
@@ -70,9 +70,9 @@ public class Communication {
         }
     }
 
-    public String execute(Command command, int port) {
+    public String execute(Request request, int port) {
         try (Socket socket = new Socket("127.0.0.1", port)) {
-            new ObjectOutputStream(socket.getOutputStream()).writeObject(command);
+            new ObjectOutputStream(socket.getOutputStream()).writeObject(request);
 
             return (String)new ObjectInputStream(socket.getInputStream()).readObject();
         }

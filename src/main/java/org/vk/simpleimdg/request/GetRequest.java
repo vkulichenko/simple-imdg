@@ -15,24 +15,19 @@
  * limitations under the License.
  */
 
-package org.vk.simpleimdg.command;
+package org.vk.simpleimdg.request;
 
 import org.vk.simpleimdg.Storage;
 
-public class PutRequest implements Command {
+public class GetRequest implements Request {
     private final String key;
 
-    private final String value;
-
-    public PutRequest(String key, String value) {
+    public GetRequest(String key) {
         this.key = key;
-        this.value = value;
     }
 
     @Override
     public String handle(Storage storage) {
-        storage.put(key, value);
-
-        return "OK";
+        return storage.get(key);
     }
 }

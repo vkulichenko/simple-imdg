@@ -19,9 +19,9 @@ package org.vk.simpleimdg;
 
 import java.util.Map;
 import java.util.UUID;
-import org.vk.simpleimdg.command.Command;
-import org.vk.simpleimdg.command.GetRequest;
-import org.vk.simpleimdg.command.PutRequest;
+import org.vk.simpleimdg.request.Request;
+import org.vk.simpleimdg.request.GetRequest;
+import org.vk.simpleimdg.request.PutRequest;
 
 public class Client {
     private final Communication communication = new Communication();
@@ -42,12 +42,12 @@ public class Client {
         return execute(key, new GetRequest(key));
     }
 
-    private String execute(String key, Command command) {
+    private String execute(String key, Request request) {
         Map<UUID, Integer> topology = discovery.topology();
 
         UUID id = mapper.map(key.hashCode() % 10, topology);
 
-        return communication.execute(command, topology.get(id));
+        return communication.execute(request, topology.get(id));
     }
 
     public static void main(String[] args) throws Exception {

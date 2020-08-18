@@ -21,9 +21,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import org.vk.simpleimdg.command.RebalanceRequest;
+import org.vk.simpleimdg.request.RebalanceRequest;
 
 public class Storage {
+    private static final int PARTITIONS = 10;
+
     private final Map<Integer, Map<String, String>> partitions = new HashMap<>();
 
     private final Mapper mapper = new Mapper();
@@ -49,12 +51,8 @@ public class Storage {
         partitions.put(partition, data);
     }
 
-    private Map<String, String> partition(String key) {
-        return partitions.get(key.hashCode() % 10);
-    }
-
     public void remap(Map<UUID, Integer> topology) {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < PARTITIONS; i++) {
             UUID id = mapper.map(i, topology);
 
             if (id.equals(localId)) {
@@ -64,8 +62,15 @@ public class Storage {
             else {
                 Map<String, String> partition = partitions.remove(i);
 
-                communication.execute(new RebalanceRequest(i, partition), topology.get(id));
+                if (partition != null)
+                    communication.execute(new RebalanceRequest(i, partition), topology.get(id));
             }
         }
+
+        System.out.println("Remapped partitions!");
+    }
+
+    private Map<String, String> partition(String key) {
+        return partitions.get(key.hashCode() % PARTITIONS);
     }
 }

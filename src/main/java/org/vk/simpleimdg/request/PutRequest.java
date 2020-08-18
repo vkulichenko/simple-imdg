@@ -15,24 +15,23 @@
  * limitations under the License.
  */
 
-package org.vk.simpleimdg.command;
+package org.vk.simpleimdg.request;
 
-import java.util.Map;
 import org.vk.simpleimdg.Storage;
 
-public class RebalanceRequest implements Command {
-    private final int partition;
+public class PutRequest implements Request {
+    private final String key;
 
-    private final Map<String, String> data;
+    private final String value;
 
-    public RebalanceRequest(int partition, Map<String, String> data) {
-        this.partition = partition;
-        this.data = data;
+    public PutRequest(String key, String value) {
+        this.key = key;
+        this.value = value;
     }
 
     @Override
     public String handle(Storage storage) {
-        storage.onPartitionReceived(partition, data);
+        storage.put(key, value);
 
         return "OK";
     }

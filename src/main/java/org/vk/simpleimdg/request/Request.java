@@ -1,8 +1,8 @@
-package org.vk.simpleimdg.command;
+package org.vk.simpleimdg.request;
 
 import java.io.Serializable;
 import org.vk.simpleimdg.Storage;
 
-public interface Command extends Serializable {
+public interface Request extends Serializable {
     String handle(Storage storage);
 }
