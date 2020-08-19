@@ -17,11 +17,15 @@
 
 package org.vk.simpleimdg;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import org.vk.simpleimdg.request.Request;
+import java.util.stream.Collectors;
 import org.vk.simpleimdg.request.GetRequest;
+import org.vk.simpleimdg.request.PartitionsRequest;
 import org.vk.simpleimdg.request.PutRequest;
+import org.vk.simpleimdg.request.Request;
 
 public class Client {
     private final Communication communication = new Communication();
@@ -42,6 +46,10 @@ public class Client {
         return execute(key, new GetRequest(key));
     }
 
+    public Map<UUID, Collection<Integer>> partitions() {
+        return broadcast(new PartitionsRequest());
+    }
+
     private <R> R execute(String key, Request<R> request) {
         Map<UUID, Integer> topology = discovery.topology();
 
@@ -50,13 +58,35 @@ public class Client {
         return communication.execute(request, topology.get(id));
     }
 
+    private <R> Map<UUID, R> broadcast(Request<R> request) {
+        Map<UUID, R> results = new HashMap<>();
+
+        for (Map.Entry<UUID, Integer> e : discovery.topology().entrySet()) {
+            results.put(e.getKey(), communication.execute(request, e.getValue()));
+        }
+
+        return results;
+    }
+
     public static void main(String[] args) throws Exception {
         Client client = new Client();
 
         client.start();
 
-        client.put("key1", "value1");
+        for (int i = 0; i < 50; i++)
+            client.put("key" + i, "value" + i);
 
-        System.out.println(client.get("key1"));
+        while (true) {
+            System.in.read();
+
+            Map<UUID, Collection<Integer>> partitions = client.partitions();
+
+            for (Map.Entry<UUID, Collection<Integer>> e : partitions.entrySet()) {
+                System.out.println(e.getKey());
+                System.out.println("    " + e.getValue().stream().map(Object::toString).collect(Collectors.joining(", ")));
+            }
+
+            System.out.println();
+        }
     }
 }

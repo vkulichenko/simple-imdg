@@ -48,8 +48,6 @@ public class Discovery {
             for (KeyValue kv : client.getKVClient().get(PREFIX_BS, GetOption.newBuilder().withPrefix(PREFIX_BS).build()).get().getKvs()) {
                 add(kv);
             }
-
-            listener.accept(topology);
         }
 
         client.getWatchClient().watch(PREFIX_BS, WatchOption.newBuilder().withPrefix(PREFIX_BS).build(), res -> {
@@ -66,8 +64,9 @@ public class Discovery {
             }
         });
 
-        if (localId != null && localPort != null)
-            client.getKVClient().put(bs(PREFIX_BS.concat(bs(localId))), bs(localPort)).get();
+        if (localId != null && localPort != null) {
+            client.getKVClient().put(PREFIX_BS.concat(bs(localId)), bs(localPort)).get();
+        }
     }
 
     private void add(KeyValue kv) {

@@ -17,9 +17,12 @@
 
 package org.vk.simpleimdg;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.vk.simpleimdg.request.RebalanceRequest;
@@ -27,7 +30,7 @@ import org.vk.simpleimdg.request.RebalanceRequest;
 public class Storage {
     private static final int PARTITIONS = 10;
 
-    private final Map<Integer, Map<String, String>> partitions = new HashMap<>();
+    private final Map<Integer, Map<String, String>> partitions = new ConcurrentHashMap<>();
 
     private final Mapper mapper = new Mapper();
 
@@ -48,8 +51,16 @@ public class Storage {
         return partition(key).get(key);
     }
 
-    public Collection<String> keySet(int partition) {
+    public Set<String> keySet(int partition) {
         return partitions.get(partition).keySet();
+    }
+
+    public Collection<Integer> partitions() {
+        List<Integer> list = new ArrayList<>(partitions.keySet());
+
+        Collections.sort(list);
+
+        return list;
     }
 
     public void onPartitionReceived(int partition, Map<String, String> data) {
@@ -61,8 +72,7 @@ public class Storage {
             UUID id = mapper.map(i, topology);
 
             if (id.equals(localId)) {
-                if (!partitions.containsKey(i))
-                    partitions.put(i, new ConcurrentHashMap<>());
+                partitions.putIfAbsent(i, new ConcurrentHashMap<>());
             }
             else {
                 Map<String, String> partition = partitions.remove(i);
