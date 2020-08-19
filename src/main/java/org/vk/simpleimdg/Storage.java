@@ -17,6 +17,7 @@
 
 package org.vk.simpleimdg;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -47,6 +48,10 @@ public class Storage {
         return partition(key).get(key);
     }
 
+    public Collection<String> keySet(int partition) {
+        return partitions.get(partition).keySet();
+    }
+
     public void onPartitionReceived(int partition, Map<String, String> data) {
         partitions.put(partition, data);
     }
@@ -67,7 +72,7 @@ public class Storage {
             }
         }
 
-        System.out.println("Remapped partitions!");
+        System.out.println("Remapping completed.");
     }
 
     private Map<String, String> partition(String key) {

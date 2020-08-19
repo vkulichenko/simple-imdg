@@ -19,7 +19,7 @@ package org.vk.simpleimdg.request;
 
 import org.vk.simpleimdg.Storage;
 
-public class GetRequest implements Request {
+public class GetRequest implements Request<String> {
     private final String key;
 
     public GetRequest(String key) {

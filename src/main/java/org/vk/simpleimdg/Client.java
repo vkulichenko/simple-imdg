@@ -42,7 +42,7 @@ public class Client {
         return execute(key, new GetRequest(key));
     }
 
-    private String execute(String key, Request request) {
+    private <R> R execute(String key, Request<R> request) {
         Map<UUID, Integer> topology = discovery.topology();
 
         UUID id = mapper.map(key.hashCode() % 10, topology);

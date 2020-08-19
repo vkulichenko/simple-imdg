@@ -20,7 +20,7 @@ package org.vk.simpleimdg.request;
 import java.util.Map;
 import org.vk.simpleimdg.Storage;
 
-public class RebalanceRequest implements Request {
+public class RebalanceRequest implements Request<Void> {
     private final int partition;
 
     private final Map<String, String> data;
@@ -31,9 +31,9 @@ public class RebalanceRequest implements Request {
     }
 
     @Override
-    public String handle(Storage storage) {
+    public Void handle(Storage storage) {
         storage.onPartitionReceived(partition, data);
 
-        return "OK";
+        return null;
     }
 }

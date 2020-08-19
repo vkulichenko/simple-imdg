@@ -17,22 +17,18 @@
 
 package org.vk.simpleimdg.request;
 
+import java.util.Collection;
 import org.vk.simpleimdg.Storage;
 
-public class PutRequest implements Request<Void> {
-    private final String key;
+public class KeySetRequest implements Request<Collection<String>> {
+    private final int partition;
 
-    private final String value;
-
-    public PutRequest(String key, String value) {
-        this.key = key;
-        this.value = value;
+    public KeySetRequest(int partition) {
+        this.partition = partition;
     }
 
     @Override
-    public Void handle(Storage storage) {
-        storage.put(key, value);
-
-        return null;
+    public Collection<String> handle(Storage storage) {
+        return storage.keySet(partition);
     }
 }

@@ -57,7 +57,7 @@ public class Communication {
                     ObjectOutput out = new ObjectOutputStream(socket.getOutputStream());
 
                     while (true) {
-                        Request request = (Request)in.readObject();
+                        Request<?> request = (Request<?>)in.readObject();
 
                         out.writeObject(request.handle(storage));
                     }
@@ -70,11 +70,11 @@ public class Communication {
         }
     }
 
-    public String execute(Request request, int port) {
+    public <R> R execute(Request<R> request, int port) {
         try (Socket socket = new Socket("127.0.0.1", port)) {
             new ObjectOutputStream(socket.getOutputStream()).writeObject(request);
 
-            return (String)new ObjectInputStream(socket.getInputStream()).readObject();
+            return (R)new ObjectInputStream(socket.getInputStream()).readObject();
         }
         catch (Exception e) {
             e.printStackTrace();
