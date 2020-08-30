@@ -15,13 +15,16 @@
  * limitations under the License.
  */
 
-package org.vk.simpleimdg;
+package org.vk.simpleimdg.client;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.vk.simpleimdg.Communication;
+import org.vk.simpleimdg.Discovery;
+import org.vk.simpleimdg.Mapper;
 import org.vk.simpleimdg.request.GetRequest;
 import org.vk.simpleimdg.request.PartitionsRequest;
 import org.vk.simpleimdg.request.PutRequest;
