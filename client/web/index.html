@@ -15,12 +15,23 @@
     </div>
 
     <div id="nodes">
-      <h2>Nodes:</h2>
-      <ol>
-        <li v-for="node in nodes">
-          {{ node.id }}
-        </li>
-      </ol>
+      <h2>Nodes</h2>
+
+      <table class="table text-monospace">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Partitions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="node in nodes">
+            <td>{{ node.id }}</td>
+            <td>{{ node.partitions }}</td>
+          </tr>
+        </tbody>
+      </table>
+
       <button type="button" class="btn btn-primary" v-on:click="refresh">Refresh</button>
     </div>
 

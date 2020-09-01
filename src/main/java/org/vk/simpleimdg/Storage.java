@@ -18,7 +18,6 @@
 package org.vk.simpleimdg;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +54,7 @@ public class Storage {
         return partitions.get(partition).keySet();
     }
 
-    public Collection<Integer> partitions() {
+    public List<Integer> partitions() {
         List<Integer> list = new ArrayList<>(partitions.keySet());
 
         Collections.sort(list);

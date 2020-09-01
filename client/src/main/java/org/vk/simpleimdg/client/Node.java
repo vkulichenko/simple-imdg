@@ -17,16 +17,24 @@
 
 package org.vk.simpleimdg.client;
 
+import java.util.List;
 import java.util.UUID;
 
 public class Node {
     private final UUID id;
 
-    public Node(UUID id) {
+    private final List<Integer> partitions;
+
+    public Node(UUID id, List<Integer> partitions) {
         this.id = id;
+        this.partitions = partitions;
     }
 
     public UUID getId() {
         return id;
+    }
+
+    public List<Integer> getPartitions() {
+        return partitions;
     }
 }

@@ -17,12 +17,12 @@
 
 package org.vk.simpleimdg.request;
 
-import java.util.Collection;
+import java.util.List;
 import org.vk.simpleimdg.Storage;
 
-public class PartitionsRequest implements Request<Collection<Integer>> {
+public class PartitionsRequest implements Request<List<Integer>> {
     @Override
-    public Collection<Integer> handle(Storage storage) {
+    public List<Integer> handle(Storage storage) {
         return storage.partitions();
     }
 }

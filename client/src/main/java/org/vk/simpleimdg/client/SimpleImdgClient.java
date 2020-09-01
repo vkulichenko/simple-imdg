@@ -17,11 +17,10 @@
 
 package org.vk.simpleimdg.client;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.vk.simpleimdg.Communication;
 import org.vk.simpleimdg.Discovery;
 import org.vk.simpleimdg.Mapper;
@@ -30,7 +29,7 @@ import org.vk.simpleimdg.request.PartitionsRequest;
 import org.vk.simpleimdg.request.PutRequest;
 import org.vk.simpleimdg.request.Request;
 
-public class Client {
+public class SimpleImdgClient {
     private final Communication communication = new Communication();
 
     private final Discovery discovery = new Discovery(topology -> {});
@@ -38,7 +37,7 @@ public class Client {
     private final Mapper mapper = new Mapper();
 
     public void start() throws Exception {
-        discovery.join(null, null);
+//        discovery.join(null, null);
     }
 
     public void put(String key, String value) {
@@ -49,7 +48,7 @@ public class Client {
         return execute(key, new GetRequest(key));
     }
 
-    public Map<UUID, Collection<Integer>> partitions() {
+    public Map<UUID, List<Integer>> partitions() {
         return broadcast(new PartitionsRequest());
     }
 
@@ -69,27 +68,5 @@ public class Client {
         }
 
         return results;
-    }
-
-    public static void main(String[] args) throws Exception {
-        Client client = new Client();
-
-        client.start();
-
-        for (int i = 0; i < 50; i++)
-            client.put("key" + i, "value" + i);
-
-        while (true) {
-            System.in.read();
-
-            Map<UUID, Collection<Integer>> partitions = client.partitions();
-
-            for (Map.Entry<UUID, Collection<Integer>> e : partitions.entrySet()) {
-                System.out.println(e.getKey());
-                System.out.println("    " + e.getValue().stream().map(Object::toString).collect(Collectors.joining(", ")));
-            }
-
-            System.out.println();
-        }
     }
 }

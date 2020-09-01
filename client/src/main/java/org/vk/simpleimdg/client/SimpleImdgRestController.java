@@ -26,13 +26,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin
 @RestController
-public class RestClientController {
+public class SimpleImdgRestController {
+    private final SimpleImdgClient imdgClient;
+
+    public SimpleImdgRestController(SimpleImdgClient imdgClient) {
+        this.imdgClient = imdgClient;
+    }
+
     @GetMapping("/nodes")
     public List<Node> nodes() {
         return Arrays.asList(
-            new Node(UUID.randomUUID()),
-            new Node(UUID.randomUUID()),
-            new Node(UUID.randomUUID())
+            new Node(UUID.randomUUID(), Arrays.asList(1, 2, 3)),
+            new Node(UUID.randomUUID(), Arrays.asList(4, 5, 6))
         );
+
+//        return imdgClient
+//            .partitions()
+//            .entrySet()
+//            .stream()
+//            .map(e -> new Node(e.getKey(), e.getValue()))
+//            .collect(Collectors.toList());
     }
 }
