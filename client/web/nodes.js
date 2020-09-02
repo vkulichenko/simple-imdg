@@ -5,7 +5,9 @@ new Vue({
   },
   methods: {
     refresh: function () {
-      axios.get(`http://localhost:8080/nodes`).then(response => (this.nodes = response.data))
+      axios.get(`http://localhost:8080/nodes`).then(response => {
+        this.nodes = Object.values(response.data)
+      })
     }
   },
   mounted: function() {

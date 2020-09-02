@@ -17,35 +17,40 @@
 
 package org.vk.simpleimdg.client;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+public class Partition {
+    private final int num;
 
-public class Node {
-    private final UUID id;
+    private boolean added;
 
-    private final boolean isNew;
+    private boolean removed;
 
-    private final List<Partition> partitions = new ArrayList<>();
-
-    public Node(UUID id, boolean isNew) {
-        this.id = id;
-        this.isNew = isNew;
+    public Partition(int num) {
+        this.num = num;
     }
 
-    public void addPartition(Partition partition) {
-        partitions.add(partition);
+    public int getNum() {
+        return num;
     }
 
-    public UUID getId() {
-        return id;
+    public Partition added() {
+        added = true;
+        removed = false;
+
+        return this;
     }
 
-    public boolean isNew() {
-        return isNew;
+    public Partition removed() {
+        added = false;
+        removed = true;
+
+        return this;
     }
 
-    public List<Partition> getPartitions() {
-        return partitions;
+    public boolean isAdded() {
+        return added;
+    }
+
+    public boolean isRemoved() {
+        return removed;
     }
 }

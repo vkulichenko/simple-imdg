@@ -17,7 +17,7 @@
 
 package org.vk.simpleimdg.client;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,7 +37,7 @@ public class SimpleImdgClient {
     private final Mapper mapper = new Mapper();
 
     public void start() throws Exception {
-//        discovery.join(null, null);
+        discovery.join(null, null);
     }
 
     public void put(String key, String value) {
@@ -61,7 +61,7 @@ public class SimpleImdgClient {
     }
 
     private <R> Map<UUID, R> broadcast(Request<R> request) {
-        Map<UUID, R> results = new HashMap<>();
+        Map<UUID, R> results = new LinkedHashMap<>();
 
         for (Map.Entry<UUID, Integer> e : discovery.topology().entrySet()) {
             results.put(e.getKey(), communication.execute(request, e.getValue()));

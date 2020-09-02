@@ -17,8 +17,9 @@
 
 package org.vk.simpleimdg.client;
 
-import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,22 +30,39 @@ import org.springframework.web.bind.annotation.RestController;
 public class SimpleImdgRestController {
     private final SimpleImdgClient imdgClient;
 
+    private Map<UUID, List<Integer>> prevPartitions;
+
     public SimpleImdgRestController(SimpleImdgClient imdgClient) {
         this.imdgClient = imdgClient;
     }
 
     @GetMapping("/nodes")
-    public List<Node> nodes() {
-        return Arrays.asList(
-            new Node(UUID.randomUUID(), Arrays.asList(1, 2, 3)),
-            new Node(UUID.randomUUID(), Arrays.asList(4, 5, 6))
-        );
+    public Map<UUID, Node> nodes() {
+        Map<UUID, Node> nodes = new LinkedHashMap<>();
 
-//        return imdgClient
-//            .partitions()
-//            .entrySet()
-//            .stream()
-//            .map(e -> new Node(e.getKey(), e.getValue()))
-//            .collect(Collectors.toList());
+        Map<UUID, List<Integer>> partitions = imdgClient.partitions();
+
+        for (Map.Entry<UUID, List<Integer>> e : partitions.entrySet()) {
+            UUID id = e.getKey();
+            List<Integer> nums = e.getValue();
+            List<Integer> prevNums = prevPartitions.get(id);
+
+            if (prevNums != null) {
+                // TODO
+            }
+            else {
+                Node node = new Node(id, true);
+
+                for (Integer num : nums) {
+                    node.addPartition(new Partition(num).added());
+                }
+
+                nodes.put(id, node);
+            }
+        }
+
+        prevPartitions = partitions;
+
+        return nodes;
     }
 }
