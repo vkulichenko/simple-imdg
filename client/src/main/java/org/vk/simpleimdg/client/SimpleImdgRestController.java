@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class SimpleImdgRestController {
     private final SimpleImdgClient imdgClient;
 
+    private Map<UUID, Node> nodes;
+
     private Map<UUID, List<Integer>> prevPartitions;
 
     public SimpleImdgRestController(SimpleImdgClient imdgClient) {
@@ -38,23 +40,74 @@ public class SimpleImdgRestController {
 
     @GetMapping("/nodes")
     public Map<UUID, Node> nodes() {
-        Map<UUID, Node> nodes = new LinkedHashMap<>();
-
         Map<UUID, List<Integer>> partitions = imdgClient.partitions();
 
-        for (Map.Entry<UUID, List<Integer>> e : partitions.entrySet()) {
-            UUID id = e.getKey();
-            List<Integer> nums = e.getValue();
-            List<Integer> prevNums = prevPartitions.get(id);
+        if (prevPartitions == null) {
+            nodes = new LinkedHashMap<>();
 
-            if (prevNums != null) {
-                // TODO
+            for (Map.Entry<UUID, List<Integer>> e : partitions.entrySet()) {
+                UUID id = e.getKey();
+                Node node = new Node(id, false);
+
+                for (Integer num : e.getValue()) {
+                    node.addPartition(new Partition(num));
+                }
+
+                nodes.put(id, node);
             }
-            else {
-                Node node = new Node(id, true);
+        }
+        else if (!prevPartitions.keySet().equals(partitions.keySet())) {
+            nodes = new LinkedHashMap<>();
 
-                for (Integer num : nums) {
-                    node.addPartition(new Partition(num).added());
+            for (Map.Entry<UUID, List<Integer>> e : partitions.entrySet()) {
+                UUID id = e.getKey();
+                List<Integer> prev = prevPartitions.get(id);
+                List<Integer> curr = e.getValue();
+
+                Node node;
+
+                if (prev != null) {
+                    node = new Node(id, false);
+
+                    int prevIdx = 0;
+                    int currIdx = 0;
+
+                    while (prevIdx < prev.size() || currIdx < curr.size()) {
+                        if (prevIdx >= prev.size()) {
+                            node.addPartition(new Partition(curr.get(currIdx++)).added());
+                        }
+                        else if (currIdx >= curr.size()) {
+                            node.addPartition(new Partition(prev.get(prevIdx++)).removed());
+                        }
+                        else {
+                            int prevNum = prev.get(prevIdx);
+                            int currNum = curr.get(currIdx);
+
+                            if (prevNum < currNum) {
+                                node.addPartition(new Partition(prevNum).removed());
+
+                                prevIdx++;
+                            }
+                            else if (prevNum > currNum) {
+                                node.addPartition(new Partition(currNum).added());
+
+                                currIdx++;
+                            }
+                            else { // prevNum == currNum
+                                node.addPartition(new Partition(prevNum));
+
+                                prevIdx++;
+                                currIdx++;
+                            }
+                        }
+                    }
+                }
+                else {
+                    node = new Node(id, true);
+
+                    for (Integer num : curr) {
+                        node.addPartition(new Partition(num).added());
+                    }
                 }
 
                 nodes.put(id, node);

@@ -13,20 +13,27 @@
   </head>
 
   <body>
-    <div id="nodes">
-      <h2>Nodes</h2>
+    <div id="nodes" class="m-4 text-monospace">
+      <h3>Partitions Distribution</h3>
 
-      <table class="table text-monospace">
+      <table class="table table-hover">
         <thead>
           <tr>
-            <th scope="col">ID</th>
+            <th scope="col" style="width:450px">ID</th>
             <th scope="col">Partitions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="node in nodes">
-            <td>{{ node.id }}</td>
-            <td>{{ node.partitions }}</td>
+            <td>{{ node.id }} <span class="badge badge-pill badge-success" v-if="node.new">New</span></td>
+            <td>
+              <span v-for="partition in node.partitions">
+                <span class="text-success font-weight-bold" v-if="partition.added">{{ partition.num }}</span>
+                <span class="text-danger font-weight-bold" v-else-if="partition.removed">{{ partition.num }}</span>
+                <span class="text-dark" v-else>{{ partition.num }}</span>
+                &nbsp;
+              </span>
+            </td>
           </tr>
         </tbody>
       </table>
